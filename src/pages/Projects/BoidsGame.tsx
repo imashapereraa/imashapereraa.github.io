@@ -9,7 +9,7 @@ function BoidsGamePage() {
         <Col md={{ span: 8, offset: 2 }} style={{ textAlign: 'center' }}>
           <h3>2D Boids Simulation</h3>
           <iframe
-            src="/2d-boids/export/2D Boids.html"
+            src="/2d-boids/2D Boids.html"
             width="900"
             height="600"
             style={{ border: 'none', background: '#c0cfb2', borderRadius: '1em' }}
