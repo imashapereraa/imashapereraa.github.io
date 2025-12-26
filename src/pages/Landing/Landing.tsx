@@ -6,6 +6,7 @@ import styled from "styled-components";
 import ContactMenu from "../../components/atoms/ContactMenu/ContactMenu";
 import useOutsideClickCheck from "../../hooks/OutsideClickCheck.ts"
 import { CSSTransition } from 'react-transition-group';
+import { Link } from 'react-router-dom';
 
 const MatchaHighlight = styled.mark`
   background-color: #c0cfb2;
@@ -54,7 +55,9 @@ function LandingPage({ }) {
               <p>Software engineer and IT graduate from Monash University,
                 currently working for National Australian Bank. <br /><br />
                 Experienced in full stack development (spring java and react focused). <br /><br />
-                Take a look at my coding <MatchaHighlight><a>adventures</a></MatchaHighlight> or feel free to <ConnectHover onClick={handleConnectClick}>connect with me</ConnectHover>.
+                Take a look at my coding <MatchaHighlight>
+                  <Link to="/projects">adventures</Link>
+                </MatchaHighlight> or feel free to <ConnectHover onClick={handleConnectClick}>connect with me</ConnectHover>.
               </p>
             </Row>
             <Row>
