@@ -1,0 +1,34 @@
+.square {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.light { background-color: #eeeed2; }
+.dark  { background-color: #769656; }
+#board {
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+}
+.r { background-image: url("pieces/black-rook.png"); }
+.n { background-image: url("pieces/black-knight.png"); }
+.b { background-image: url("pieces/black-bishop.png"); }
+.q { background-image: url("pieces/black-queen.png"); }
+.k { background-image: url("pieces/black-king.png"); }
+.p { background-image: url("pieces/black-pawn.png"); }
+
+.R { background-image: url("pieces/white-rook.png"); }
+.N { background-image: url("pieces/white-knight.png"); }
+.B { background-image: url("pieces/white-bishop.png"); }
+.Q { background-image: url("pieces/white-queen.png"); }
+.K { background-image: url("pieces/white-king.png"); }
+.P { background-image: url("pieces/white-pawn.png"); }
+
+.selected {
+  background-color: #f6f669;
+}
