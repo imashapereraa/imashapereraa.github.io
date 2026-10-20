@@ -299,6 +299,9 @@ function bossNext(b) { return state.kills[b.id] ? new Date(state.kills[b.id] + b
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 
+// To do items show just the task name; gearing keeps its notes.
+const todoLi = item => taskLi({ t: item.t });
+
 function taskLi(item) {
   return `<li><div class="txt">${esc(item.t)}${item.n ? `<small>${esc(item.n)}</small>` : ""}</div></li>`;
 }
@@ -320,9 +323,9 @@ function renderProgression() {
 function renderLists() {
   $("#lists").innerHTML =
     sectionHtml("daily", "Daily", `<span class="badge">resets ${fmtAus(nextDailyReset())}</span>`,
-      `<ul class="tasks">${DAILIES.map(taskLi).join("")}</ul>`) +
+      `<ul class="tasks">${DAILIES.map(todoLi).join("")}</ul>`) +
     WEEKLIES.map(g => sectionHtml("w-" + g.group, "Weekly: " + g.group, `<span class="badge">resets ${fmtAus(nextWeeklyReset())}</span>`,
-      `<ul class="tasks">${g.items.map(taskLi).join("")}</ul>`)).join("");
+      `<ul class="tasks">${g.items.map(todoLi).join("")}</ul>`)).join("");
 }
 
 const bellBtn = id => `<button class="bell" data-alert="${id}" aria-pressed="${!!state.alerts[id]}">${state.alerts[id] ? "🔔 Alert on" : "🔕 Alert off"}</button>`;
