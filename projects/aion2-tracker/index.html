@@ -4,80 +4,80 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AION 2 Progress Tracker</title>
-<meta name="description" content="Daily and weekly to-do list, event timers with browser alerts, and a gearing guide for AION 2.">
+<meta name="description" content="Daily and weekly to-do list, event and boss timers with browser alerts, and a gearing guide for AION 2.">
 <style>
+  /* Matches the parent site (imashapereraa.github.io): Bootstrap defaults, mint-white page, sage highlight */
   :root {
-    --bg: #0f1117;
-    --panel: #171a23;
-    --panel-2: #1e2230;
-    --line: #2a2f40;
-    --text: #e6e8ef;
-    --muted: #9097a8;
-    --accent: #d9a441;
-    --accent-2: #6aa8ff;
-    --ok: #4fc38a;
-    --warn: #e0794d;
-    --radius: 10px;
+    --bg: #f8fff8;
+    --panel: #ffffff;
+    --line: #dee2e6;
+    --text: #212529;
+    --muted: #6c757d;
+    --accent: #c0cfb2;
+    --underline: #b0acba;
+    --ok: #198754;
+    --radius: 1em;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  a { color: var(--accent-2); }
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif; }
+  a { color: black; text-decoration: underline; text-decoration-color: var(--underline); }
+  a:hover { opacity: .5; }
+  mark { background-color: var(--accent); color: inherit; padding: .1875em; }
   .wrap { max-width: 1040px; margin: 0 auto; padding: 16px; }
   header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; margin-bottom: 16px; }
-  h1 { font-size: 22px; margin: 0; letter-spacing: .3px; }
-  h1 span { color: var(--accent); }
-  .resets { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
-  .pill { background: var(--panel); border: 1px solid var(--line); padding: 4px 10px; border-radius: 999px; }
-  .pill b { color: var(--text); font-variant-numeric: tabular-nums; }
+  h1 { font-size: 1.5rem; font-weight: 500; margin: 0; }
+  .resets { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+  .pill { background: var(--panel); border: 1px solid var(--line); padding: 4px 12px; border-radius: 999px; }
+  .pill b { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
 
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
-  button, select { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
-  button:hover, select:hover { border-color: var(--accent); }
-  button.primary { background: var(--accent); color: #1a1406; border-color: var(--accent); font-weight: 600; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; }
+  button, select { font: inherit; font-size: 14px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: .375rem; padding: 5px 12px; cursor: pointer; }
+  button:hover, select:hover { border-color: #adb5bd; }
+  button.primary { background: var(--accent); border-color: var(--accent); }
+  button.primary:hover { opacity: .8; }
 
   nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
-  nav.tabs button { background: transparent; border: 1px solid var(--line); }
-  nav.tabs button[aria-selected=true] { background: var(--accent); color: #1a1406; border-color: var(--accent); font-weight: 600; }
+  nav.tabs button { font-size: 16px; background: transparent; }
+  nav.tabs button[aria-selected=true] { background: var(--accent); border-color: var(--accent); }
 
   .section { margin-bottom: 14px; }
   .section > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .section > summary::-webkit-details-marker { display: none; }
-  .section > summary h2 { font-size: 16px; margin: 0; flex: 1 1 auto; }
-  .section > summary .chev { transition: transform .2s; color: var(--muted); }
+  h2 { font-size: 1.15rem; font-weight: 500; margin: 0; }
+  .section > summary h2 { flex: 1 1 auto; }
+  .section > summary .chev { transition: transform .2s; color: var(--muted); font-size: 12px; }
   .section[open] > summary .chev { transform: rotate(90deg); }
-  .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-  .badge.server { border-color: #4a5a85; color: #9fb4ea; }
+  .badge { font-size: 12px; padding: 2px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
 
   ul.tasks { list-style: none; margin: 10px 0 0; padding: 0; }
-  ul.tasks li { padding: 8px 6px; border-top: 1px solid var(--line); }
+  ul.tasks li { padding: 8px 4px; border-top: 1px solid var(--line); }
   ul.tasks li:first-child { border-top: none; }
-  .txt small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
-  .txt .tags { display: inline-flex; gap: 6px; margin-left: 6px; vertical-align: middle; flex-wrap: wrap; }
-  .times { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
-  h3.sub { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 14px 0 0; }
+  .txt small { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  h3.sub { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 16px 0 0; }
 
   .timers-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-  .timers-head h2 { font-size: 16px; margin: 0; }
-  .alert-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
-  .timer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 6px; border-top: 1px solid var(--line); }
-  .timer:first-of-type { border-top: none; }
-  .timer .name { flex: 1 1 180px; }
-  .timer .name small { display: block; color: var(--muted); font-size: 12.5px; }
-  .timer .left { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; }
+  .alert-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
+  .timer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 4px; border-top: 1px solid var(--line); }
+  h3.sub + .timer, #bosses .timer:first-child { border-top: none; }
+  .timer .name { flex: 1 1 200px; }
+  .timer .name b { font-weight: 500; }
+  .timer .name small { display: block; color: var(--muted); font-size: 13.5px; }
+  .timer .left { font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 96px; text-align: right; }
   .timer .left.soon { color: var(--ok); }
-  .timer .at { color: var(--muted); font-size: 13px; min-width: 110px; text-align: right; font-variant-numeric: tabular-nums; }
-  .bell[aria-pressed=true] { border-color: var(--accent); color: var(--accent); }
+  .timer .left.idle { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .timer .at { color: var(--muted); font-size: 14px; min-width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+  .timer .acts { display: flex; gap: 6px; }
   .bell[aria-pressed=false] { color: var(--muted); }
 
-  .note { color: var(--muted); font-size: 13px; }
+  .note { color: var(--muted); font-size: 13.5px; margin: 10px 0 0; }
   .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>AION 2 <span>Progress Tracker</span></h1>
+    <h1>AION 2 <mark>Progress Tracker</mark></h1>
     <div class="resets">
       <div class="pill">Daily reset in <b id="dailyIn">–</b></div>
       <div class="pill">Weekly reset in <b id="weeklyIn">–</b></div>
@@ -106,7 +106,12 @@
           </div>
         </div>
         <div id="timers"></div>
-        <p class="note">Times are Melbourne / Sydney time. Alerts only fire while this page is open in a browser tab.</p>
+        <p class="note">Times are Melbourne / Sydney time. Abyss boss times are community-reported, so check the in-game timer. Alerts only fire while this page is open in a browser tab.</p>
+      </section>
+      <section class="card">
+        <h2>Field bosses</h2>
+        <div id="bosses"></div>
+        <p class="note">Field bosses respawn a set time after they're killed. Press <b>Killed</b> when one goes down to start its respawn countdown.</p>
       </section>
       <div id="lists"></div>
     </div>
@@ -235,16 +240,43 @@ function nextHourly(min, now = new Date()) {
   if (d <= now) d.setUTCHours(d.getUTCHours() + 1);
   return d;
 }
-function nextEvery3h(now = new Date()) {
-  const step = 3 * 3600e3;
-  return new Date(Math.floor(+now / step) * step + step);
+// Every `hours` hours, starting from `offsetH` o'clock UTC.
+function nextEvery(hours, offsetH, now = new Date()) {
+  const step = hours * 3600e3, off = offsetH * 3600e3;
+  return new Date(Math.floor((+now - off) / step) * step + step + off);
+}
+// Given weekdays (0 = Sun) at a UTC time.
+function nextWeekdays(days, h, m, now = new Date()) {
+  for (let add = 0; add < 8; add++) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + add, h, m));
+    if (d > now && days.includes(d.getUTCDay())) return d;
+  }
 }
 const fmtClock = d => d.toLocaleString("en-AU", { timeZone: "Australia/Sydney", hour: "numeric", minute: "2-digit" });
+const fmtWhen = (d, now) => d - now > 20 * 3600e3 ? fmtAus(d) : fmtClock(d);
 
+// Abyss times are 21:00 / 21:30 server time (GMT+9) = 12:00 / 12:30 UTC.
 const TIMERS = [
-  { id: "shugo", name: "Shugo Festival", when: "Every hour at :00", next: now => nextHourly(0, now) },
-  { id: "invasion", name: "Dimensional Invasion", when: "Every hour at :30", next: now => nextHourly(30, now) },
-  { id: "rift", name: "Spacetime Rift", when: "Every 3 hours", next: nextEvery3h },
+  { group: "Events", items: [
+    { id: "shugo", name: "Shugo Festival", when: "Every hour at :00", next: now => nextHourly(0, now) },
+    { id: "invasion", name: "Dimensional Invasion", when: "Every hour at :30", next: now => nextHourly(30, now) },
+    { id: "rift", name: "Spacetime Rift", when: "Every 3 hours", next: now => nextEvery(3, 0, now) },
+  ]},
+  { group: "Abyss bosses", items: [
+    { id: "kaira", name: "Watcher Kaira", when: "Chaotic Lower Reshanta · every 3 hours", next: now => nextEvery(3, 1, now) },
+    { id: "nahma", name: "Guardian Lord Nahma", when: "Reshanta · Fri & Sun", next: now => nextWeekdays([5, 0], 12, 0, now) },
+    { id: "executors", name: "Executors Argo, Kaira & Tamasa", when: "Reshanta · Mon, Thu & Sat", next: now => nextWeekdays([1, 4, 6], 12, 30, now) },
+  ]},
+];
+const TIMER_LIST = TIMERS.flatMap(g => g.items);
+
+// Respawn timers start when the boss dies.
+const BOSSES = [
+  { id: "danar", name: "Melted Danar", zone: "Field boss", hours: 1 },
+  { id: "dartan", name: "Silent Dartan", zone: "Verteron: Southern Altamia Highland · Altgard: Basfelt Ruins", hours: 6 },
+  { id: "kashapa", name: "Soul Ruler Kashapa", zone: "Verteron · Altgard: Fafnite Deposit", hours: 6 },
+  { id: "lagta", name: "High Commander Lagta", zone: "Verteron: Drana Plantation · Altgard: Lagta Fortress", hours: 12 },
+  { id: "gartua", name: "Immortal Gartua", zone: "Altgard: Immortal Isle", hours: 12 },
 ];
 
 /* ---------------- STATE ---------------- */
@@ -254,21 +286,21 @@ function load() {
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
   state = state || {};
   state.open = state.open || {};
-  state.alerts = state.alerts || { shugo: true, invasion: true, rift: true };
+  state.alerts = state.alerts || {};
+  state.kills = state.kills || {};
+  TIMER_LIST.concat(BOSSES).forEach(t => { if (state.alerts[t.id] === undefined) state.alerts[t.id] = true; });
   state.lead = [1, 3, 5, 10].includes(state.lead) ? state.lead : 5;
   if (state.tab !== "progression") state.tab = "todo";
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+function bossNext(b) { return state.kills[b.id] ? new Date(state.kills[b.id] + b.hours * 3600e3) : null; }
 
 /* ---------------- RENDER ---------------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 
 function taskLi(item) {
-  const tags = [];
-  if (item.s === "server") tags.push('<span class="badge server">server-wide</span>');
-  if (item.opt) tags.push('<span class="badge">optional</span>');
-  return `<li><div class="txt">${esc(item.t)}${item.c > 1 ? ` <span class="times">×${item.c}</span>` : ""}<span class="tags">${tags.join("")}</span>${item.n ? `<small>${esc(item.n)}</small>` : ""}</div></li>`;
+  return `<li><div class="txt">${esc(item.t)}${item.n ? `<small>${esc(item.n)}</small>` : ""}</div></li>`;
 }
 
 function sectionHtml(key, title, badgeHtml, body) {
@@ -280,7 +312,7 @@ function sectionHtml(key, title, badgeHtml, body) {
 function renderProgression() {
   $("#tab-progression").innerHTML = PROGRESSION.map(sec => {
     let body = `<ul class="tasks">${sec.items.map(taskLi).join("")}</ul>`;
-    if (sec.optional) body += `<h3 class="sub">Optional / over time</h3><ul class="tasks">${sec.optional.map(taskLi).join("")}</ul>`;
+    if (sec.optional) body += `<h3 class="sub">Over time</h3><ul class="tasks">${sec.optional.map(taskLi).join("")}</ul>`;
     return sectionHtml("p-" + sec.id, sec.title, "", body);
   }).join("");
 }
@@ -293,24 +325,35 @@ function renderLists() {
       `<ul class="tasks">${g.items.map(taskLi).join("")}</ul>`)).join("");
 }
 
+const bellBtn = id => `<button class="bell" data-alert="${id}" aria-pressed="${!!state.alerts[id]}">${state.alerts[id] ? "🔔 Alert on" : "🔕 Alert off"}</button>`;
+const timerRow = (id, name, sub, acts) => `<div class="timer">
+    <div class="name"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+    <div class="at" id="at-${id}"></div>
+    <div class="left" id="left-${id}"></div>
+    <div class="acts">${acts}${bellBtn(id)}</div>
+  </div>`;
+
 function renderTimers() {
-  $("#timers").innerHTML = TIMERS.map(t => `<div class="timer">
-    <div class="name"><b>${esc(t.name)}</b><small>${esc(t.when)}</small></div>
-    <div class="at" id="at-${t.id}"></div>
-    <div class="left" id="left-${t.id}"></div>
-    <button class="bell" data-timer="${t.id}" aria-pressed="${!!state.alerts[t.id]}">${state.alerts[t.id] ? "🔔 Alert on" : "🔕 Alert off"}</button>
-  </div>`).join("");
+  $("#timers").innerHTML = TIMERS.map(g => `<h3 class="sub">${esc(g.group)}</h3>` +
+    g.items.map(t => timerRow(t.id, t.name, t.when, "")).join("")).join("");
+  $("#bosses").innerHTML = BOSSES.map(b => timerRow(b.id, b.name, `${b.zone} · respawns ${b.hours}h after kill`,
+    `<button data-kill="${b.id}">Killed</button>${state.kills[b.id] ? `<button data-clear="${b.id}" aria-label="Clear ${esc(b.name)} timer">Clear</button>` : ""}`)).join("");
   updateTimers(new Date());
 }
 
+function setRow(id, next, now) {
+  const at = $("#at-" + id), left = $("#left-" + id);
+  if (!next) { at.textContent = ""; left.textContent = "Not tracked"; left.className = "left idle"; return; }
+  const ms = next - now;
+  at.textContent = fmtWhen(next, now);
+  if (ms <= 0) { left.textContent = "Respawned"; left.className = "left soon"; return; }
+  left.textContent = fmtDur(ms);
+  left.className = "left" + (ms <= state.lead * 60000 ? " soon" : "");
+}
+
 function updateTimers(now) {
-  TIMERS.forEach(t => {
-    const n = t.next(now), ms = n - now;
-    $("#at-" + t.id).textContent = fmtClock(n);
-    const left = $("#left-" + t.id);
-    left.textContent = fmtDur(ms);
-    left.classList.toggle("soon", ms <= state.lead * 60000);
-  });
+  TIMER_LIST.forEach(t => setRow(t.id, t.next(now), now));
+  BOSSES.forEach(b => setRow(b.id, bossNext(b), now));
 }
 
 /* ---------------- ALERTS ---------------- */
@@ -323,22 +366,26 @@ function renderAlertStatus() {
   status.textContent = p === "granted" ? "Alerts enabled." : p === "denied" ? "Alerts are blocked in your browser settings." : "";
 }
 
+function upcoming(now) {
+  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now), verb: "starts" }))
+    .concat(BOSSES.map(b => ({ id: b.id, name: b.name, next: bossNext(b), verb: "respawns" })))
+    .filter(x => x.next && x.next > now);
+}
+
 const fired = {};
 function checkAlerts(now) {
   if (!canNotify || Notification.permission !== "granted") return;
-  TIMERS.forEach(t => {
-    if (!state.alerts[t.id]) return;
-    const n = t.next(now), ms = n - now;
-    if (ms <= state.lead * 60000 && fired[t.id] !== +n) {
-      fired[t.id] = +n;
-      const mins = Math.max(1, Math.round(ms / 60000));
-      try { new Notification(`${t.name} in ${mins} min`, { body: `Starts at ${fmtClock(n)}`, tag: "aion2-" + t.id }); } catch (e) {}
-    }
+  upcoming(now).forEach(x => {
+    const ms = x.next - now;
+    if (!state.alerts[x.id] || ms > state.lead * 60000 || fired[x.id] === +x.next) return;
+    fired[x.id] = +x.next;
+    const mins = Math.max(1, Math.round(ms / 60000));
+    try { new Notification(`${x.name} in ${mins} min`, { body: `${x.verb === "starts" ? "Starts" : "Respawns"} at ${fmtClock(x.next)}`, tag: "aion2-" + x.id }); } catch (e) {}
   });
 }
-// Don't alert for a start that's already inside the window when the page opens.
+// Don't alert for anything already inside the window when the page opens or the lead time changes.
 function primeAlerts(now) {
-  TIMERS.forEach(t => { const n = t.next(now); if (n - now <= state.lead * 60000) fired[t.id] = +n; });
+  upcoming(now).forEach(x => { if (x.next - now <= state.lead * 60000) fired[x.id] = +x.next; });
 }
 
 function renderAll() {
@@ -358,8 +405,12 @@ function showTab(t) {
 document.addEventListener("click", e => {
   const tab = e.target.closest("nav.tabs button");
   if (tab) { showTab(tab.dataset.tab); save(); return; }
-  const bell = e.target.closest(".bell");
-  if (bell) { state.alerts[bell.dataset.timer] = !state.alerts[bell.dataset.timer]; save(); renderTimers(); }
+  const bell = e.target.closest("[data-alert]");
+  if (bell) { state.alerts[bell.dataset.alert] = !state.alerts[bell.dataset.alert]; save(); renderTimers(); return; }
+  const kill = e.target.closest("[data-kill]");
+  if (kill) { state.kills[kill.dataset.kill] = Date.now(); save(); renderTimers(); return; }
+  const clear = e.target.closest("[data-clear]");
+  if (clear) { delete state.kills[clear.dataset.clear]; save(); renderTimers(); }
 });
 document.addEventListener("toggle", e => {
   const d = e.target; if (d.matches && d.matches("details[data-key]")) { state.open[d.dataset.key] = d.open; save(); }
