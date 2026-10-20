@@ -84,6 +84,12 @@
   .timer .name small { display: block; color: var(--muted); font-size: 13.5px; }
   .timer .left { font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 96px; text-align: right; }
   .timer .left.soon { color: var(--ok); }
+  .timer .left.idle { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .timer .acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .timer .acts form { display: flex; gap: 6px; margin: 0; }
+  .timer .acts input { font: inherit; font-size: 14px; width: 104px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: .375rem; padding: 5px 8px; }
+  .timer .acts input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+  #bosses .timer:first-child { border-top: none; }
   .timer .at { color: var(--muted); font-size: 14px; min-width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
   .bell[aria-pressed=false] { color: var(--muted); }
 
@@ -135,6 +141,10 @@
           </div>
         </div>
         <div id="timers"></div>
+      </section>
+      <section class="card">
+        <h2>Field bosses</h2>
+        <div id="bosses"></div>
       </section>
       <div id="lists"></div>
     </div>
@@ -293,6 +303,25 @@ const TIMERS = [
 ];
 const TIMER_LIST = TIMERS.flatMap(g => g.items);
 
+// Field bosses respawn a set time after they die, so they're timed from a kill or from the in-game countdown.
+const BOSSES = [
+  { id: "gartua", name: "Immortal Gartua", zone: "Altgard · Isle of Immortality", hours: 12 },
+  { id: "lagta", name: "High Commander Lagta", zone: "Altgard · Ragta Fortress", hours: 12 },
+  { id: "kashapa", name: "Soul Ruler Kashapa", zone: "Altgard · Pafnite Burial Ground", hours: 6 },
+  { id: "dartan", name: "Silent Dartan", zone: "Altgard · Forest of Purification", hours: 6 },
+];
+
+// "6h 52m", "6h52", "1h", "45m", "6:52" or plain minutes.
+function parseLeft(s) {
+  s = String(s).trim().toLowerCase();
+  let m = s.match(/^(\d+):(\d{1,2})$/);
+  if (m) return (+m[1] * 60 + +m[2]) * 60000;
+  m = s.match(/^(?:(\d+)\s*h\w*)?\s*(?:(\d+)\s*m\w*)?$/);
+  if (m && (m[1] || m[2])) return ((+m[1] || 0) * 60 + (+m[2] || 0)) * 60000;
+  if (/^\d+$/.test(s)) return +s * 60000;
+  return null;
+}
+
 /* ---------------- STATE ---------------- */
 const KEY = "aion2-tracker-v2";
 let state;
@@ -302,7 +331,8 @@ function load() {
   state.open = state.open || {};
   state.alerts = state.alerts || {};
   delete state.kills;
-  TIMER_LIST.forEach(t => { if (state.alerts[t.id] === undefined) state.alerts[t.id] = true; });
+  state.spawns = state.spawns || {};
+  TIMER_LIST.concat(BOSSES).forEach(t => { if (state.alerts[t.id] === undefined) state.alerts[t.id] = true; });
   state.lead = [1, 3, 5, 10].includes(state.lead) ? state.lead : 5;
   if (state.tab !== "progression") state.tab = "todo";
 }
@@ -349,18 +379,38 @@ const timerRow = t => `<div class="timer">
     ${bellBtn(t.id)}
   </div>`;
 
+const bossRow = b => `<div class="timer">
+    <div class="name"><b>${esc(b.name)}</b><small>${esc(b.zone)} · respawns ${b.hours}h after kill</small></div>
+    <div class="at" id="at-${b.id}"></div>
+    <div class="left" id="left-${b.id}"></div>
+    <div class="acts">
+      <form data-set="${b.id}"><input name="left" placeholder="Time left" aria-label="${esc(b.name)} time left, e.g. 6h 52m" autocomplete="off"> <button>Set</button></form>
+      <button data-kill="${b.id}">Killed</button>
+      ${bellBtn(b.id)}
+    </div>
+  </div>`;
+
 function renderTimers() {
   $("#timers").innerHTML = TIMERS.map(g => `<h3 class="sub">${esc(g.group)}</h3>` + g.items.map(timerRow).join("")).join("");
+  $("#bosses").innerHTML = BOSSES.map(bossRow).join("");
   updateTimers(new Date());
 }
 
+function bossNext(b) { return state.spawns[b.id] ? new Date(state.spawns[b.id]) : null; }
+
+function setRow(id, next, now) {
+  const at = $("#at-" + id), left = $("#left-" + id);
+  if (!next) { at.textContent = ""; left.textContent = "Not set"; left.className = "left idle"; return; }
+  const ms = next - now;
+  at.textContent = fmtWhen(next, now);
+  if (ms <= 0) { left.textContent = "Spawned"; left.className = "left soon"; return; }
+  left.textContent = fmtDur(ms);
+  left.className = "left" + (ms <= state.lead * 60000 ? " soon" : "");
+}
+
 function updateTimers(now) {
-  TIMER_LIST.forEach(t => {
-    const next = t.next(now), ms = next - now, left = $("#left-" + t.id);
-    $("#at-" + t.id).textContent = fmtWhen(next, now);
-    left.textContent = fmtDur(ms);
-    left.classList.toggle("soon", ms <= state.lead * 60000);
-  });
+  TIMER_LIST.forEach(t => setRow(t.id, t.next(now), now));
+  BOSSES.forEach(b => setRow(b.id, bossNext(b), now));
 }
 
 /* ---------------- THEME ---------------- */
@@ -388,7 +438,9 @@ function renderAlertStatus() {
 }
 
 function upcoming(now) {
-  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now) }));
+  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now), verb: "Starts" }))
+    .concat(BOSSES.map(b => ({ id: b.id, name: b.name, next: bossNext(b), verb: "Spawns" })))
+    .filter(x => x.next && x.next > now);
 }
 
 const fired = {};
@@ -399,7 +451,7 @@ function checkAlerts(now) {
     if (!state.alerts[x.id] || ms > state.lead * 60000 || fired[x.id] === +x.next) return;
     fired[x.id] = +x.next;
     const mins = Math.max(1, Math.round(ms / 60000));
-    try { new Notification(`${x.name} in ${mins} min`, { body: `Starts at ${fmtClock(x.next)}`, tag: "aion2-" + x.id }); } catch (e) {}
+    try { new Notification(`${x.name} in ${mins} min`, { body: `${x.verb} at ${fmtClock(x.next)}`, tag: "aion2-" + x.id }); } catch (e) {}
   });
 }
 // Don't alert for anything already inside the window when the page opens or the lead time changes.
@@ -425,8 +477,23 @@ document.addEventListener("click", e => {
   const tab = e.target.closest("nav.tabs button");
   if (tab) { showTab(tab.dataset.tab); save(); return; }
   const bell = e.target.closest("[data-alert]");
-  if (bell) { state.alerts[bell.dataset.alert] = !state.alerts[bell.dataset.alert]; save(); renderTimers(); }
+  if (bell) { state.alerts[bell.dataset.alert] = !state.alerts[bell.dataset.alert]; save(); renderTimers(); return; }
+  const kill = e.target.closest("[data-kill]");
+  if (kill) {
+    const b = BOSSES.find(b => b.id === kill.dataset.kill);
+    state.spawns[b.id] = Date.now() + b.hours * 3600e3; save(); updateTimers(new Date());
+  }
 });
+document.addEventListener("submit", e => {
+  const form = e.target.closest("form[data-set]");
+  if (!form) return;
+  e.preventDefault();
+  const input = form.elements.left, ms = parseLeft(input.value);
+  if (ms === null) { input.setCustomValidity("Try something like 6h 52m"); input.reportValidity(); return; }
+  state.spawns[form.dataset.set] = Date.now() + ms; save();
+  input.value = ""; updateTimers(new Date());
+});
+document.addEventListener("input", e => { if (e.target.name === "left") e.target.setCustomValidity(""); });
 document.addEventListener("toggle", e => {
   const d = e.target; if (d.matches && d.matches("details[data-key]")) { state.open[d.dataset.key] = d.open; save(); }
 }, true);
