@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AION 2 Progress Tracker</title>
-<meta name="description" content="Character gearing progression, dailies, weeklies and event checklist for AION 2.">
+<meta name="description" content="Daily and weekly to-do list, event timers with browser alerts, and a gearing guide for AION 2.">
 <style>
   :root {
     --bg: #0f1117;
@@ -32,11 +32,9 @@
   .pill b { color: var(--text); font-variant-numeric: tabular-nums; }
 
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
-  button { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
-  button:hover { border-color: var(--accent); }
-
-  .bar { height: 8px; background: var(--panel-2); border-radius: 99px; overflow: hidden; }
-  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), #f0c86b); width: 0; transition: width .25s; }
+  button, select { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+  button:hover, select:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #1a1406; border-color: var(--accent); font-weight: 600; }
 
   nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
   nav.tabs button { background: transparent; border: 1px solid var(--line); }
@@ -46,33 +44,34 @@
   .section > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .section > summary::-webkit-details-marker { display: none; }
   .section > summary h2 { font-size: 16px; margin: 0; flex: 1 1 auto; }
-  .section > summary .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .section > summary .chev { transition: transform .2s; color: var(--muted); }
   .section[open] > summary .chev { transform: rotate(90deg); }
-  .section .bar { margin-top: 8px; }
   .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-  .badge.done { border-color: var(--ok); color: var(--ok); }
   .badge.server { border-color: #4a5a85; color: #9fb4ea; }
-  .badge.ends { border-color: var(--warn); color: var(--warn); }
 
   ul.tasks { list-style: none; margin: 10px 0 0; padding: 0; }
-  ul.tasks li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 6px; border-top: 1px solid var(--line); }
+  ul.tasks li { padding: 8px 6px; border-top: 1px solid var(--line); }
   ul.tasks li:first-child { border-top: none; }
-  ul.tasks li.checked .txt { color: var(--muted); text-decoration: line-through; text-decoration-color: #555; }
-  ul.tasks input[type=checkbox] { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); flex: none; cursor: pointer; }
-  .txt { flex: 1 1 auto; min-width: 0; }
   .txt small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
   .txt .tags { display: inline-flex; gap: 6px; margin-left: 6px; vertical-align: middle; flex-wrap: wrap; }
-  .pips { display: flex; gap: 4px; flex-wrap: wrap; flex: none; max-width: 50%; justify-content: flex-end; }
-  .pip { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); padding: 0; }
-  .pip.on { background: var(--accent); border-color: var(--accent); }
+  .times { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
   h3.sub { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 14px 0 0; }
+
+  .timers-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+  .timers-head h2 { font-size: 16px; margin: 0; }
+  .alert-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
+  .timer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 6px; border-top: 1px solid var(--line); }
+  .timer:first-of-type { border-top: none; }
+  .timer .name { flex: 1 1 180px; }
+  .timer .name small { display: block; color: var(--muted); font-size: 12.5px; }
+  .timer .left { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; }
+  .timer .left.soon { color: var(--ok); }
+  .timer .at { color: var(--muted); font-size: 13px; min-width: 110px; text-align: right; font-variant-numeric: tabular-nums; }
+  .bell[aria-pressed=true] { border-color: var(--accent); color: var(--accent); }
+  .bell[aria-pressed=false] { color: var(--muted); }
 
   .note { color: var(--muted); font-size: 13px; }
   .hidden { display: none !important; }
-  @media (max-width: 560px) {
-    .pips { max-width: 45%; }
-  }
 </style>
 </head>
 <body>
@@ -86,13 +85,32 @@
   </header>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="progression" aria-selected="true">Gearing</button>
-    <button role="tab" data-tab="todo" aria-selected="false">To do</button>
+    <button role="tab" data-tab="todo" aria-selected="true">To do</button>
+    <button role="tab" data-tab="progression" aria-selected="false">Gearing</button>
   </nav>
 
   <main>
-    <div id="tab-progression"></div>
-    <div id="tab-todo" class="hidden"></div>
+    <div id="tab-todo">
+      <section class="card">
+        <div class="timers-head">
+          <h2>Timers</h2>
+          <div class="alert-ctl">
+            <button id="enableAlerts" class="primary">Enable browser alerts</button>
+            <span id="alertStatus"></span>
+            <label>Alert me <select id="lead">
+              <option value="1">1 min</option>
+              <option value="3">3 min</option>
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+            </select> before</label>
+          </div>
+        </div>
+        <div id="timers"></div>
+        <p class="note">Times are Melbourne / Sydney time. Alerts only fire while this page is open in a browser tab.</p>
+      </section>
+      <div id="lists"></div>
+    </div>
+    <div id="tab-progression" class="hidden"></div>
   </main>
 </div>
 
@@ -157,7 +175,7 @@ const DAILIES = [
   { id: "d5", t: "Shugo Festival", c: 3, s: "server", n: "Every hour at :00" },
   { id: "d6", t: "Dimensional Invasion", c: 1, s: "server", n: "Every hour at :30" },
   { id: "d7", t: "Unknown Fissure (daily dungeon)", c: 2, s: "server", n: "14 per week, so 2 a day keeps pace" },
-  { id: "d8", t: "Claim Attendance", n: "Includes Trick or Treat during Halloween" },
+  { id: "d8", t: "Claim Attendance" },
   { id: "d9", t: "Spacetime Rift", opt: true, n: "Every 3h · extra AP after the weekly cap" },
   { id: "d10", t: "Check Black Cloud Merchant", opt: true, n: "Stock changes hourly" },
 ];
@@ -188,51 +206,6 @@ const WEEKLIES = [
   ]},
 ];
 
-// end: ISO date when the event ends (hidden after). reset: "weekly" | "daily" | "once"
-const EVENTS = [
-  { id: "ev-hw", title: "Trick or Treat (Halloween)", end: "2026-11-04T00:00:00Z", endLabel: "Nov 4 maintenance", groups: [
-    { name: "Weekly missions (Season Mission → Event tab)", s: "server", items: [
-      { id: "hw1", t: "Log in 3 times", c: 3, r: "weekly", n: "30 coins" },
-      { id: "hw2", t: "Hunt 10 Abyss monsters", r: "weekly", n: "25 coins" },
-      { id: "hw3", t: "Clear Transcendence once", r: "weekly", n: "25 coins" },
-      { id: "hw4", t: "Clear Expedition Conquest once", r: "weekly", n: "25 coins" },
-      { id: "hw5", t: "Clear Ascension Trial once", r: "weekly", n: "25 coins" },
-      { id: "hw6", t: "Clear Nightmare (any stage)", r: "weekly", n: "25 coins" },
-      { id: "hw7", t: "Obtain 1 Unique gear", r: "weekly", n: "20 coins" },
-      { id: "hw8", t: "Use 5 scrolls", r: "weekly", n: "20 coins" },
-      { id: "hw9", t: "Dimensional Invasion", r: "weekly", n: "20 coins" },
-      { id: "hw10", t: "Shugo Festival", r: "weekly", n: "20 coins" },
-    ]},
-    { name: "Candy Keys (60 fragments each · Substance Morph → Event)", s: "server", items: [
-      { id: "hk1", t: "Blue key → open blue candy", r: "weekly", n: "4 Odyle Energy + Resurrection Spiritstones (best)" },
-      { id: "hk2", t: "Yellow key → open yellow candy", r: "weekly", n: "10k Abyss Points + Life Crystals" },
-      { id: "hk3", t: "Red key → open red candy", r: "weekly", n: "Growth Pet Chests + Battle Enhance Scrolls" },
-    ]},
-    { name: "Pumpkin Coin Trader (best purchases first)", s: "server", items: [
-      { id: "hp1", t: "Special Halloween Chest (250)", r: "once", n: "Breastplate skin + 10k Pet Soul Crystals · one per server" },
-      { id: "hp2", t: "Odyle Energy (10)", c: 4, r: "weekly" },
-      { id: "hp3", t: "Nightmare Challenge Tickets (7)", c: 3, r: "weekly" },
-      { id: "hp4", t: "Shugo Festival Reward Keys (7)", c: 3, r: "weekly" },
-      { id: "hp5", t: "Lower Abyss Rift Stones (30)", c: 2, r: "weekly" },
-      { id: "hp6", t: "Daily Dungeon instant clear tickets (3)", c: 7, r: "weekly" },
-      { id: "hp7", t: "Spend leftovers on Superior Power Shards (1)", r: "weekly" },
-    ]},
-    { name: "Odyle Energy cap lifted", items: [
-      { id: "ho1", t: "Buy Odyle Energy at Wind Breeze Merchant", c: 20, r: "weekly", n: "100k Kinah each · up to 20 per character" },
-    ]},
-  ]},
-  { id: "ev-coa", title: "Conquerors of the Abyss", end: "2026-10-28T00:00:00Z", endLabel: "Oct 28", groups: [
-    { name: "Wind Breeze Merchant → Special", items: [
-      { id: "ca1", t: "Abyss Rift Stones (Event)", c: 7, r: "weekly", n: "50k Kinah each · per level 45+ character" },
-    ]},
-  ]},
-  { id: "ev-pc", title: "Planet's Call event pass", end: "2026-10-28T00:00:00Z", endLabel: "Oct 28", groups: [
-    { name: "Weekly", items: [
-      { id: "pc1", t: "Hit 15k weekly pass EXP", r: "weekly" },
-    ]},
-  ]},
-];
-
 /* ---------------- TIME HELPERS ---------------- */
 const RESET_H = 7; // UTC
 function lastDailyReset(now = new Date()) {
@@ -257,101 +230,120 @@ function fmtDur(ms) {
 // Shown in Melbourne / Sydney time (AEST/AEDT)
 const fmtAus = d => d.toLocaleString("en-AU", { timeZone: "Australia/Sydney", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 
+function nextHourly(min, now = new Date()) {
+  const d = new Date(now); d.setUTCMinutes(min, 0, 0);
+  if (d <= now) d.setUTCHours(d.getUTCHours() + 1);
+  return d;
+}
+function nextEvery3h(now = new Date()) {
+  const step = 3 * 3600e3;
+  return new Date(Math.floor(+now / step) * step + step);
+}
+const fmtClock = d => d.toLocaleString("en-AU", { timeZone: "Australia/Sydney", hour: "numeric", minute: "2-digit" });
+
+const TIMERS = [
+  { id: "shugo", name: "Shugo Festival", when: "Every hour at :00", next: now => nextHourly(0, now) },
+  { id: "invasion", name: "Dimensional Invasion", when: "Every hour at :30", next: now => nextHourly(30, now) },
+  { id: "rift", name: "Spacetime Rift", when: "Every 3 hours", next: nextEvery3h },
+];
+
 /* ---------------- STATE ---------------- */
-const KEY = "aion2-tracker-v1";
+const KEY = "aion2-tracker-v2";
 let state;
 function load() {
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
-  // Older saves held a list of characters; keep the active one's progress.
-  if (state && Array.isArray(state.chars)) {
-    const c = state.chars.find(c => c.id === state.active) || state.chars[0] || {};
-    state = { prog: c.prog, daily: c.daily, weekly: c.weekly, once: c.once, dStamp: c.dStamp, wStamp: c.wStamp, open: state.open };
-  }
   state = state || {};
-  ["prog", "daily", "weekly", "once", "open"].forEach(k => { state[k] = state[k] || {}; });
-  if (state.tab !== "todo") state.tab = "progression";
+  state.open = state.open || {};
+  state.alerts = state.alerts || { shugo: true, invasion: true, rift: true };
+  state.lead = [1, 3, 5, 10].includes(state.lead) ? state.lead : 5;
+  if (state.tab !== "progression") state.tab = "todo";
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
-function applyResets() {
-  const ld = +lastDailyReset(), lw = +lastWeeklyReset();
-  if ((state.dStamp || 0) < ld) { state.daily = {}; state.dStamp = ld; }
-  if ((state.wStamp || 0) < lw) { state.weekly = {}; state.wStamp = lw; }
-}
 
 /* ---------------- RENDER ---------------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 
-function store(kind) { return state[kind]; }
-function val(kind, id) { return store(kind)[id] || 0; }
-function isDone(kind, item) { const v = val(kind, item.id); return item.c ? v >= item.c : !!v; }
-
-function taskLi(kind, item) {
-  const done = isDone(kind, item), v = val(kind, item.id);
+function taskLi(item) {
   const tags = [];
   if (item.s === "server") tags.push('<span class="badge server">server-wide</span>');
   if (item.opt) tags.push('<span class="badge">optional</span>');
-  let control;
-  if (item.c && item.c > 1) {
-    control = `<div class="pips" data-kind="${kind}" data-id="${item.id}" data-c="${item.c}">` +
-      Array.from({ length: item.c }, (_, i) => `<button class="pip${i < v ? " on" : ""}" data-i="${i + 1}" aria-label="${i + 1} of ${item.c}"></button>`).join("") + `</div>`;
-  } else control = "";
-  return `<li class="${done ? "checked" : ""}">
-    <input type="checkbox" ${done ? "checked" : ""} data-kind="${kind}" data-id="${item.id}" data-c="${item.c || 1}" aria-label="${esc(item.t)}">
-    <div class="txt">${esc(item.t)}${item.c > 1 ? ` <span class="note">(${v}/${item.c})</span>` : ""}<span class="tags">${tags.join("")}</span>${item.n ? `<small>${esc(item.n)}</small>` : ""}</div>
-    ${control}</li>`;
+  return `<li><div class="txt">${esc(item.t)}${item.c > 1 ? ` <span class="times">×${item.c}</span>` : ""}<span class="tags">${tags.join("")}</span>${item.n ? `<small>${esc(item.n)}</small>` : ""}</div></li>`;
 }
 
-function countDone(kind, items, skipOpt) {
-  const list = skipOpt ? items.filter(i => !i.opt) : items;
-  return [list.filter(i => isDone(kind, i)).length, list.length];
-}
-
-function sectionHtml(key, title, badgeHtml, body, done, total) {
+function sectionHtml(key, title, badgeHtml, body) {
   const open = state.open[key] !== undefined ? state.open[key] : true;
-  const pct = total ? Math.round(done / total * 100) : 0;
   return `<details class="card section" data-key="${key}" ${open ? "open" : ""}>
-    <summary><span class="chev">▶</span><h2>${esc(title)}</h2>${badgeHtml || ""}<span class="count">${done}/${total}</span></summary>
-    <div class="bar"><i style="width:${pct}%"></i></div>${body}</details>`;
+    <summary><span class="chev">▶</span><h2>${esc(title)}</h2>${badgeHtml || ""}</summary>${body}</details>`;
 }
 
 function renderProgression() {
   $("#tab-progression").innerHTML = PROGRESSION.map(sec => {
-    const all = sec.items.concat(sec.optional || []);
-    const [d, t] = countDone("prog", all);
-    const badge = d === t ? '<span class="badge done">complete</span>' : "";
-    let body = `<ul class="tasks">${sec.items.map(i => taskLi("prog", i)).join("")}</ul>`;
-    if (sec.optional) body += `<h3 class="sub">Optional / over time</h3><ul class="tasks">${sec.optional.map(i => taskLi("prog", i)).join("")}</ul>`;
-    return sectionHtml("p-" + sec.id, sec.title, badge, body, d, t);
+    let body = `<ul class="tasks">${sec.items.map(taskLi).join("")}</ul>`;
+    if (sec.optional) body += `<h3 class="sub">Optional / over time</h3><ul class="tasks">${sec.optional.map(taskLi).join("")}</ul>`;
+    return sectionHtml("p-" + sec.id, sec.title, "", body);
   }).join("");
 }
 
-function kindOf(item) { return item.r === "once" ? "once" : item.r === "daily" ? "daily" : "weekly"; }
+function renderLists() {
+  $("#lists").innerHTML =
+    sectionHtml("daily", "Daily", `<span class="badge">resets ${fmtAus(nextDailyReset())}</span>`,
+      `<ul class="tasks">${DAILIES.map(taskLi).join("")}</ul>`) +
+    WEEKLIES.map(g => sectionHtml("w-" + g.group, "Weekly: " + g.group, `<span class="badge">resets ${fmtAus(nextWeeklyReset())}</span>`,
+      `<ul class="tasks">${g.items.map(taskLi).join("")}</ul>`)).join("");
+}
 
-function renderTodo() {
-  const [dd, dt] = countDone("daily", DAILIES, true);
-  let html = sectionHtml("daily", "Daily", `<span class="badge">resets ${fmtAus(nextDailyReset())}</span>`,
-    `<ul class="tasks">${DAILIES.map(i => taskLi("daily", i)).join("")}</ul>`, dd, dt);
-  html += WEEKLIES.map(g => {
-    const [d, t] = countDone("weekly", g.items, true);
-    return sectionHtml("w-" + g.group, "Weekly: " + g.group, `<span class="badge">resets ${fmtAus(nextWeeklyReset())}</span>`,
-      `<ul class="tasks">${g.items.map(i => taskLi("weekly", i)).join("")}</ul>`, d, t);
-  }).join("");
-  const now = new Date();
-  html += EVENTS.filter(e => new Date(e.end) > now).map(e => {
-    const all = e.groups.flatMap(g => g.items);
-    let d = 0; all.forEach(i => { if (isDone(kindOf(i), i)) d++; });
-    const body = e.groups.map(g => `<h3 class="sub">${esc(g.name)}${g.s === "server" ? ' <span class="badge server">server-wide</span>' : ""}</h3>
-      <ul class="tasks">${g.items.map(i => taskLi(kindOf(i), i)).join("")}</ul>`).join("");
-    const left = fmtDur(new Date(e.end) - now);
-    return sectionHtml("e-" + e.id, "Event: " + e.title, `<span class="badge ends">ends ${esc(e.endLabel)} · ${left}</span>`, body, d, all.length);
-  }).join("");
-  $("#tab-todo").innerHTML = html;
+function renderTimers() {
+  $("#timers").innerHTML = TIMERS.map(t => `<div class="timer">
+    <div class="name"><b>${esc(t.name)}</b><small>${esc(t.when)}</small></div>
+    <div class="at" id="at-${t.id}"></div>
+    <div class="left" id="left-${t.id}"></div>
+    <button class="bell" data-timer="${t.id}" aria-pressed="${!!state.alerts[t.id]}">${state.alerts[t.id] ? "🔔 Alert on" : "🔕 Alert off"}</button>
+  </div>`).join("");
+  updateTimers(new Date());
+}
+
+function updateTimers(now) {
+  TIMERS.forEach(t => {
+    const n = t.next(now), ms = n - now;
+    $("#at-" + t.id).textContent = fmtClock(n);
+    const left = $("#left-" + t.id);
+    left.textContent = fmtDur(ms);
+    left.classList.toggle("soon", ms <= state.lead * 60000);
+  });
+}
+
+/* ---------------- ALERTS ---------------- */
+const canNotify = "Notification" in window;
+function renderAlertStatus() {
+  const btn = $("#enableAlerts"), status = $("#alertStatus");
+  if (!canNotify) { btn.classList.add("hidden"); status.textContent = "This browser doesn't support alerts."; return; }
+  const p = Notification.permission;
+  btn.classList.toggle("hidden", p !== "default");
+  status.textContent = p === "granted" ? "Alerts enabled." : p === "denied" ? "Alerts are blocked in your browser settings." : "";
+}
+
+const fired = {};
+function checkAlerts(now) {
+  if (!canNotify || Notification.permission !== "granted") return;
+  TIMERS.forEach(t => {
+    if (!state.alerts[t.id]) return;
+    const n = t.next(now), ms = n - now;
+    if (ms <= state.lead * 60000 && fired[t.id] !== +n) {
+      fired[t.id] = +n;
+      const mins = Math.max(1, Math.round(ms / 60000));
+      try { new Notification(`${t.name} in ${mins} min`, { body: `Starts at ${fmtClock(n)}`, tag: "aion2-" + t.id }); } catch (e) {}
+    }
+  });
+}
+// Don't alert for a start that's already inside the window when the page opens.
+function primeAlerts(now) {
+  TIMERS.forEach(t => { const n = t.next(now); if (n - now <= state.lead * 60000) fired[t.id] = +n; });
 }
 
 function renderAll() {
-  applyResets();
-  renderProgression(); renderTodo();
+  renderLists(); renderProgression(); renderTimers(); renderAlertStatus();
+  $("#lead").value = state.lead;
   showTab(state.tab);
   save();
 }
@@ -363,37 +355,33 @@ function showTab(t) {
 }
 
 /* ---------------- EVENTS ---------------- */
-document.addEventListener("change", e => {
-  const el = e.target;
-  if (el.matches('input[type=checkbox][data-kind]')) {
-    const s = store(el.dataset.kind), c = +el.dataset.c;
-    if (el.checked) s[el.dataset.id] = c > 1 ? c : 1; else delete s[el.dataset.id];
-    renderAll();
-  }
-});
 document.addEventListener("click", e => {
-  const pip = e.target.closest(".pip");
-  if (pip) {
-    const box = pip.parentElement, s = store(box.dataset.kind), id = box.dataset.id, i = +pip.dataset.i;
-    s[id] = (s[id] || 0) === i ? i - 1 : i;
-    if (!s[id]) delete s[id];
-    renderAll(); return;
-  }
   const tab = e.target.closest("nav.tabs button");
-  if (tab) { showTab(tab.dataset.tab); save(); }
+  if (tab) { showTab(tab.dataset.tab); save(); return; }
+  const bell = e.target.closest(".bell");
+  if (bell) { state.alerts[bell.dataset.timer] = !state.alerts[bell.dataset.timer]; save(); renderTimers(); }
 });
 document.addEventListener("toggle", e => {
   const d = e.target; if (d.matches && d.matches("details[data-key]")) { state.open[d.dataset.key] = d.open; save(); }
 }, true);
+$("#enableAlerts").addEventListener("click", async () => {
+  try { await Notification.requestPermission(); } catch (e) {}
+  renderAlertStatus();
+  if (Notification.permission === "granted") new Notification("AION 2 alerts are on", { body: `You'll get a heads-up ${state.lead} min before each timer.` });
+});
+$("#lead").addEventListener("change", e => { state.lead = +e.target.value; save(); primeAlerts(new Date()); updateTimers(new Date()); });
 
+let lastDaily = +nextDailyReset();
 function tick() {
   const now = new Date();
   $("#dailyIn").textContent = fmtDur(nextDailyReset(now) - now);
   $("#weeklyIn").textContent = fmtDur(nextWeeklyReset(now) - now);
-  if ((state.dStamp || 0) < +lastDailyReset(now) || (state.wStamp || 0) < +lastWeeklyReset(now)) renderAll();
+  updateTimers(now);
+  checkAlerts(now);
+  if (+nextDailyReset(now) !== lastDaily) { lastDaily = +nextDailyReset(now); renderLists(); }
 }
 
-load(); renderAll(); tick(); setInterval(tick, 1000);
+load(); renderAll(); primeAlerts(new Date()); tick(); setInterval(tick, 1000);
 </script>
 </body>
 </html>
