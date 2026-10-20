@@ -143,7 +143,19 @@
         <div id="timers"></div>
       </section>
       <section class="card">
-        <h2>Field bosses</h2>
+        <div class="timers-head">
+          <h2>Field bosses</h2>
+          <div class="alert-ctl">
+            <label>Alert me <select id="bossLead">
+              <option value="1">1 min</option>
+              <option value="3">3 min</option>
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+            </select> before</label>
+          </div>
+        </div>
         <div id="bosses"></div>
       </section>
       <div id="lists"></div>
@@ -334,6 +346,7 @@ function load() {
   state.spawns = state.spawns || {};
   TIMER_LIST.concat(BOSSES).forEach(t => { if (state.alerts[t.id] === undefined) state.alerts[t.id] = true; });
   state.lead = [1, 3, 5, 10].includes(state.lead) ? state.lead : 5;
+  state.bossLead = [1, 3, 5, 10, 15, 30].includes(state.bossLead) ? state.bossLead : 10;
   if (state.tab !== "progression") state.tab = "todo";
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
@@ -398,19 +411,22 @@ function renderTimers() {
 
 function bossNext(b) { return state.spawns[b.id] ? new Date(state.spawns[b.id]) : null; }
 
-function setRow(id, next, now) {
+// Timers and field bosses each have their own "alert me before" setting, in minutes.
+const leadMs = isBoss => (isBoss ? state.bossLead : state.lead) * 60000;
+
+function setRow(id, next, now, lead) {
   const at = $("#at-" + id), left = $("#left-" + id);
   if (!next) { at.textContent = ""; left.textContent = "Not set"; left.className = "left idle"; return; }
   const ms = next - now;
   at.textContent = fmtWhen(next, now);
   if (ms <= 0) { left.textContent = "Spawned"; left.className = "left soon"; return; }
   left.textContent = fmtDur(ms);
-  left.className = "left" + (ms <= state.lead * 60000 ? " soon" : "");
+  left.className = "left" + (ms <= lead ? " soon" : "");
 }
 
 function updateTimers(now) {
-  TIMER_LIST.forEach(t => setRow(t.id, t.next(now), now));
-  BOSSES.forEach(b => setRow(b.id, bossNext(b), now));
+  TIMER_LIST.forEach(t => setRow(t.id, t.next(now), now, leadMs(false)));
+  BOSSES.forEach(b => setRow(b.id, bossNext(b), now, leadMs(true)));
 }
 
 /* ---------------- THEME ---------------- */
@@ -438,8 +454,8 @@ function renderAlertStatus() {
 }
 
 function upcoming(now) {
-  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now), verb: "Starts" }))
-    .concat(BOSSES.map(b => ({ id: b.id, name: b.name, next: bossNext(b), verb: "Spawns" })))
+  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now), verb: "Starts", lead: leadMs(false) }))
+    .concat(BOSSES.map(b => ({ id: b.id, name: b.name, next: bossNext(b), verb: "Spawns", lead: leadMs(true) })))
     .filter(x => x.next && x.next > now);
 }
 
@@ -448,7 +464,7 @@ function checkAlerts(now) {
   if (!canNotify || Notification.permission !== "granted") return;
   upcoming(now).forEach(x => {
     const ms = x.next - now;
-    if (!state.alerts[x.id] || ms > state.lead * 60000 || fired[x.id] === +x.next) return;
+    if (!state.alerts[x.id] || ms > x.lead || fired[x.id] === +x.next) return;
     fired[x.id] = +x.next;
     const mins = Math.max(1, Math.round(ms / 60000));
     try { new Notification(`${x.name} in ${mins} min`, { body: `${x.verb} at ${fmtClock(x.next)}`, tag: "aion2-" + x.id }); } catch (e) {}
@@ -456,12 +472,13 @@ function checkAlerts(now) {
 }
 // Don't alert for anything already inside the window when the page opens or the lead time changes.
 function primeAlerts(now) {
-  upcoming(now).forEach(x => { if (x.next - now <= state.lead * 60000) fired[x.id] = +x.next; });
+  upcoming(now).forEach(x => { if (x.next - now <= x.lead) fired[x.id] = +x.next; });
 }
 
 function renderAll() {
   renderLists(); renderProgression(); renderTimers(); renderAlertStatus(); renderThemeToggle();
   $("#lead").value = state.lead;
+  $("#bossLead").value = state.bossLead;
   showTab(state.tab);
   save();
 }
@@ -503,6 +520,7 @@ $("#enableAlerts").addEventListener("click", async () => {
   if (Notification.permission === "granted") new Notification("AION 2 alerts are on", { body: `You'll get a heads-up ${state.lead} min before each timer.` });
 });
 $("#lead").addEventListener("change", e => { state.lead = +e.target.value; save(); primeAlerts(new Date()); updateTimers(new Date()); });
+$("#bossLead").addEventListener("change", e => { state.bossLead = +e.target.value; save(); primeAlerts(new Date()); updateTimers(new Date()); });
 
 let lastDaily = +nextDailyReset();
 function tick() {
