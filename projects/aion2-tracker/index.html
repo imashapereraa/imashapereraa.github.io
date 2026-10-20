@@ -16,30 +16,49 @@
     --accent: #c0cfb2;
     --underline: #b0acba;
     --ok: #198754;
+    --link: #000000;
+    --on-accent: #212529;
+    --hover-line: #adb5bd;
     --radius: 1em;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #141814;
+    --panel: #1c211c;
+    --line: #2f362f;
+    --text: #e4ebe4;
+    --muted: #9aa59a;
+    --accent: #c0cfb2;
+    --underline: #6f6b7a;
+    --ok: #6fcf97;
+    --link: #e4ebe4;
+    --on-accent: #1a1f17;
+    --hover-line: #4a544a;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
     font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif; }
-  a { color: black; text-decoration: underline; text-decoration-color: var(--underline); }
+  a { color: var(--link); text-decoration: underline; text-decoration-color: var(--underline); }
   a:hover { opacity: .5; }
-  mark { background-color: var(--accent); color: inherit; padding: .1875em; }
+  mark { background-color: var(--accent); color: var(--on-accent); padding: .1875em; }
   .wrap { max-width: 1040px; margin: 0 auto; padding: 16px; }
   header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; margin-bottom: 16px; }
   h1 { font-size: 1.5rem; font-weight: 500; margin: 0; }
+  .head-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .resets { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
   .pill { background: var(--panel); border: 1px solid var(--line); padding: 4px 12px; border-radius: 999px; }
   .pill b { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
 
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; }
   button, select { font: inherit; font-size: 14px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: .375rem; padding: 5px 12px; cursor: pointer; }
-  button:hover, select:hover { border-color: #adb5bd; }
-  button.primary { background: var(--accent); border-color: var(--accent); }
+  button:hover, select:hover { border-color: var(--hover-line); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   button.primary:hover { opacity: .8; }
 
   nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
   nav.tabs button { font-size: 16px; background: transparent; }
-  nav.tabs button[aria-selected=true] { background: var(--accent); border-color: var(--accent); }
+  nav.tabs button[aria-selected=true] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
   .section { margin-bottom: 14px; }
   .section > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -59,28 +78,38 @@
   .timers-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
   .alert-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
   .timer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 4px; border-top: 1px solid var(--line); }
-  h3.sub + .timer, #bosses .timer:first-child { border-top: none; }
+  h3.sub + .timer { border-top: none; }
   .timer .name { flex: 1 1 200px; }
   .timer .name b { font-weight: 500; }
   .timer .name small { display: block; color: var(--muted); font-size: 13.5px; }
   .timer .left { font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; min-width: 96px; text-align: right; }
   .timer .left.soon { color: var(--ok); }
-  .timer .left.idle { font-size: 14px; color: var(--muted); font-weight: 400; }
   .timer .at { color: var(--muted); font-size: 14px; min-width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
-  .timer .acts { display: flex; gap: 6px; }
   .bell[aria-pressed=false] { color: var(--muted); }
 
   .note { color: var(--muted); font-size: 13.5px; margin: 10px 0 0; }
   .hidden { display: none !important; }
 </style>
+<script>
+  // Apply the saved theme (or the system preference) before the page paints.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("aion2-theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>AION 2 <mark>Progress Tracker</mark></h1>
-    <div class="resets">
-      <div class="pill">Daily reset in <b id="dailyIn">–</b></div>
-      <div class="pill">Weekly reset in <b id="weeklyIn">–</b></div>
+    <h1>AION 2 <mark>Tracker</mark></h1>
+    <div class="head-right">
+      <div class="resets">
+        <div class="pill">Daily reset in <b id="dailyIn">–</b></div>
+        <div class="pill">Weekly reset in <b id="weeklyIn">–</b></div>
+      </div>
+      <button id="themeToggle" aria-label="Toggle dark theme"></button>
     </div>
   </header>
 
@@ -106,12 +135,6 @@
           </div>
         </div>
         <div id="timers"></div>
-        <p class="note">Times are Melbourne / Sydney time. Abyss boss times are community-reported, so check the in-game timer. Alerts only fire while this page is open in a browser tab.</p>
-      </section>
-      <section class="card">
-        <h2>Field bosses</h2>
-        <div id="bosses"></div>
-        <p class="note">Field bosses respawn a set time after they're killed. Press <b>Killed</b> when one goes down to start its respawn countdown.</p>
       </section>
       <div id="lists"></div>
     </div>
@@ -270,15 +293,6 @@ const TIMERS = [
 ];
 const TIMER_LIST = TIMERS.flatMap(g => g.items);
 
-// Respawn timers start when the boss dies.
-const BOSSES = [
-  { id: "danar", name: "Melted Danar", zone: "Field boss", hours: 1 },
-  { id: "dartan", name: "Silent Dartan", zone: "Verteron: Southern Altamia Highland · Altgard: Basfelt Ruins", hours: 6 },
-  { id: "kashapa", name: "Soul Ruler Kashapa", zone: "Verteron · Altgard: Fafnite Deposit", hours: 6 },
-  { id: "lagta", name: "High Commander Lagta", zone: "Verteron: Drana Plantation · Altgard: Lagta Fortress", hours: 12 },
-  { id: "gartua", name: "Immortal Gartua", zone: "Altgard: Immortal Isle", hours: 12 },
-];
-
 /* ---------------- STATE ---------------- */
 const KEY = "aion2-tracker-v2";
 let state;
@@ -287,13 +301,12 @@ function load() {
   state = state || {};
   state.open = state.open || {};
   state.alerts = state.alerts || {};
-  state.kills = state.kills || {};
-  TIMER_LIST.concat(BOSSES).forEach(t => { if (state.alerts[t.id] === undefined) state.alerts[t.id] = true; });
+  delete state.kills;
+  TIMER_LIST.forEach(t => { if (state.alerts[t.id] === undefined) state.alerts[t.id] = true; });
   state.lead = [1, 3, 5, 10].includes(state.lead) ? state.lead : 5;
   if (state.tab !== "progression") state.tab = "todo";
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
-function bossNext(b) { return state.kills[b.id] ? new Date(state.kills[b.id] + b.hours * 3600e3) : null; }
 
 /* ---------------- RENDER ---------------- */
 const $ = s => document.querySelector(s);
@@ -329,35 +342,40 @@ function renderLists() {
 }
 
 const bellBtn = id => `<button class="bell" data-alert="${id}" aria-pressed="${!!state.alerts[id]}">${state.alerts[id] ? "🔔 Alert on" : "🔕 Alert off"}</button>`;
-const timerRow = (id, name, sub, acts) => `<div class="timer">
-    <div class="name"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
-    <div class="at" id="at-${id}"></div>
-    <div class="left" id="left-${id}"></div>
-    <div class="acts">${acts}${bellBtn(id)}</div>
+const timerRow = t => `<div class="timer">
+    <div class="name"><b>${esc(t.name)}</b><small>${esc(t.when)}</small></div>
+    <div class="at" id="at-${t.id}"></div>
+    <div class="left" id="left-${t.id}"></div>
+    ${bellBtn(t.id)}
   </div>`;
 
 function renderTimers() {
-  $("#timers").innerHTML = TIMERS.map(g => `<h3 class="sub">${esc(g.group)}</h3>` +
-    g.items.map(t => timerRow(t.id, t.name, t.when, "")).join("")).join("");
-  $("#bosses").innerHTML = BOSSES.map(b => timerRow(b.id, b.name, `${b.zone} · respawns ${b.hours}h after kill`,
-    `<button data-kill="${b.id}">Killed</button>${state.kills[b.id] ? `<button data-clear="${b.id}" aria-label="Clear ${esc(b.name)} timer">Clear</button>` : ""}`)).join("");
+  $("#timers").innerHTML = TIMERS.map(g => `<h3 class="sub">${esc(g.group)}</h3>` + g.items.map(timerRow).join("")).join("");
   updateTimers(new Date());
 }
 
-function setRow(id, next, now) {
-  const at = $("#at-" + id), left = $("#left-" + id);
-  if (!next) { at.textContent = ""; left.textContent = "Not tracked"; left.className = "left idle"; return; }
-  const ms = next - now;
-  at.textContent = fmtWhen(next, now);
-  if (ms <= 0) { left.textContent = "Respawned"; left.className = "left soon"; return; }
-  left.textContent = fmtDur(ms);
-  left.className = "left" + (ms <= state.lead * 60000 ? " soon" : "");
+function updateTimers(now) {
+  TIMER_LIST.forEach(t => {
+    const next = t.next(now), ms = next - now, left = $("#left-" + t.id);
+    $("#at-" + t.id).textContent = fmtWhen(next, now);
+    left.textContent = fmtDur(ms);
+    left.classList.toggle("soon", ms <= state.lead * 60000);
+  });
 }
 
-function updateTimers(now) {
-  TIMER_LIST.forEach(t => setRow(t.id, t.next(now), now));
-  BOSSES.forEach(b => setRow(b.id, bossNext(b), now));
+/* ---------------- THEME ---------------- */
+function renderThemeToggle() {
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  const btn = $("#themeToggle");
+  btn.textContent = dark ? "☀️ Light" : "🌙 Dark";
+  btn.setAttribute("aria-pressed", dark);
 }
+$("#themeToggle").addEventListener("click", () => {
+  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("aion2-theme", next); } catch (e) {}
+  renderThemeToggle();
+});
 
 /* ---------------- ALERTS ---------------- */
 const canNotify = "Notification" in window;
@@ -370,9 +388,7 @@ function renderAlertStatus() {
 }
 
 function upcoming(now) {
-  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now), verb: "starts" }))
-    .concat(BOSSES.map(b => ({ id: b.id, name: b.name, next: bossNext(b), verb: "respawns" })))
-    .filter(x => x.next && x.next > now);
+  return TIMER_LIST.map(t => ({ id: t.id, name: t.name, next: t.next(now) }));
 }
 
 const fired = {};
@@ -383,7 +399,7 @@ function checkAlerts(now) {
     if (!state.alerts[x.id] || ms > state.lead * 60000 || fired[x.id] === +x.next) return;
     fired[x.id] = +x.next;
     const mins = Math.max(1, Math.round(ms / 60000));
-    try { new Notification(`${x.name} in ${mins} min`, { body: `${x.verb === "starts" ? "Starts" : "Respawns"} at ${fmtClock(x.next)}`, tag: "aion2-" + x.id }); } catch (e) {}
+    try { new Notification(`${x.name} in ${mins} min`, { body: `Starts at ${fmtClock(x.next)}`, tag: "aion2-" + x.id }); } catch (e) {}
   });
 }
 // Don't alert for anything already inside the window when the page opens or the lead time changes.
@@ -392,7 +408,7 @@ function primeAlerts(now) {
 }
 
 function renderAll() {
-  renderLists(); renderProgression(); renderTimers(); renderAlertStatus();
+  renderLists(); renderProgression(); renderTimers(); renderAlertStatus(); renderThemeToggle();
   $("#lead").value = state.lead;
   showTab(state.tab);
   save();
@@ -409,11 +425,7 @@ document.addEventListener("click", e => {
   const tab = e.target.closest("nav.tabs button");
   if (tab) { showTab(tab.dataset.tab); save(); return; }
   const bell = e.target.closest("[data-alert]");
-  if (bell) { state.alerts[bell.dataset.alert] = !state.alerts[bell.dataset.alert]; save(); renderTimers(); return; }
-  const kill = e.target.closest("[data-kill]");
-  if (kill) { state.kills[kill.dataset.kill] = Date.now(); save(); renderTimers(); return; }
-  const clear = e.target.closest("[data-clear]");
-  if (clear) { delete state.kills[clear.dataset.clear]; save(); renderTimers(); }
+  if (bell) { state.alerts[bell.dataset.alert] = !state.alerts[bell.dataset.alert]; save(); renderTimers(); }
 });
 document.addEventListener("toggle", e => {
   const d = e.target; if (d.matches && d.matches("details[data-key]")) { state.open[d.dataset.key] = d.open; save(); }
