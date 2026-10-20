@@ -32,25 +32,11 @@
   .pill b { color: var(--text); font-variant-numeric: tabular-nums; }
 
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
-  .charbar { display: grid; grid-template-columns: 1fr; gap: 10px; }
-  .charrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  select, input, button { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
-  input[type=number] { width: 110px; }
-  button { cursor: pointer; }
+  button { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
   button:hover { border-color: var(--accent); }
-  button.primary { background: var(--accent); color: #1a1406; border-color: var(--accent); font-weight: 600; }
-  button.ghost { background: transparent; }
-  button.danger:hover { border-color: var(--warn); color: var(--warn); }
-  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-  .fields label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 3px; }
-  .fields input { width: 100%; }
 
   .bar { height: 8px; background: var(--panel-2); border-radius: 99px; overflow: hidden; }
   .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), #f0c86b); width: 0; transition: width .25s; }
-  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
-  .stat { background: var(--panel-2); border-radius: 8px; padding: 10px 12px; }
-  .stat .k { font-size: 12px; color: var(--muted); }
-  .stat .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 2px 0 6px; }
 
   nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
   nav.tabs button { background: transparent; border: 1px solid var(--line); }
@@ -65,7 +51,6 @@
   .section[open] > summary .chev { transform: rotate(90deg); }
   .section .bar { margin-top: 8px; }
   .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
-  .badge.now { background: rgba(217,164,65,.15); border-color: var(--accent); color: var(--accent); }
   .badge.done { border-color: var(--ok); color: var(--ok); }
   .badge.server { border-color: #4a5a85; color: #9fb4ea; }
   .badge.ends { border-color: var(--warn); color: var(--warn); }
@@ -83,18 +68,10 @@
   .pip.on { background: var(--accent); border-color: var(--accent); }
   h3.sub { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 14px 0 0; }
 
-  table.sched { width: 100%; border-collapse: collapse; font-size: 14px; }
-  table.sched th, table.sched td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); vertical-align: top; }
-  table.sched th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-top: none; }
-  .next { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .soon { color: var(--ok); font-weight: 600; }
   .note { color: var(--muted); font-size: 13px; }
-  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-  footer { color: var(--muted); font-size: 12.5px; margin: 24px 0 8px; }
   .hidden { display: none !important; }
   @media (max-width: 560px) {
     .pips { max-width: 45%; }
-    table.sched .hide-sm { display: none; }
   }
 </style>
 </head>
@@ -108,74 +85,20 @@
     </div>
   </header>
 
-  <section class="card charbar">
-    <div class="charrow">
-      <select id="charSelect" aria-label="Character"></select>
-      <button id="addChar" class="primary">+ Character</button>
-      <button id="delChar" class="ghost danger">Delete</button>
-    </div>
-    <div class="fields">
-      <label>Name <input id="fName" placeholder="Character name"></label>
-      <label>Class <input id="fClass" placeholder="e.g. Templar"></label>
-      <label>Server / Faction <input id="fServer" placeholder="e.g. Elyos – Server"></label>
-      <label>Item level <input id="fIlvl" type="number" min="0" step="1" placeholder="0"></label>
-    </div>
-    <div class="summary">
-      <div class="stat"><div class="k">Current milestone</div><div class="v" id="sMilestone">–</div><div class="bar"><i id="bMilestone"></i></div></div>
-      <div class="stat"><div class="k">Gearing checklist</div><div class="v" id="sProg">–</div><div class="bar"><i id="bProg"></i></div></div>
-      <div class="stat"><div class="k">Today's dailies</div><div class="v" id="sDaily">–</div><div class="bar"><i id="bDaily"></i></div></div>
-      <div class="stat"><div class="k">This week</div><div class="v" id="sWeekly">–</div><div class="bar"><i id="bWeekly"></i></div></div>
-    </div>
-  </section>
-
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="progression" aria-selected="true">Gearing</button>
-    <button role="tab" data-tab="daily" aria-selected="false">Dailies</button>
-    <button role="tab" data-tab="weekly" aria-selected="false">Weeklies</button>
-    <button role="tab" data-tab="events" aria-selected="false">Events</button>
-    <button role="tab" data-tab="schedule" aria-selected="false">World schedule</button>
-    <button role="tab" data-tab="data" aria-selected="false">Backup</button>
+    <button role="tab" data-tab="todo" aria-selected="false">To do</button>
   </nav>
 
   <main>
     <div id="tab-progression"></div>
-    <div id="tab-daily" class="hidden"></div>
-    <div id="tab-weekly" class="hidden"></div>
-    <div id="tab-events" class="hidden"></div>
-    <div id="tab-schedule" class="hidden"></div>
-    <div id="tab-data" class="hidden">
-      <section class="card">
-        <h2 style="font-size:16px;margin:0 0 6px">Backup &amp; restore</h2>
-        <p class="note">Progress is saved in this browser only. Export a backup to move it to another device.</p>
-        <div class="row-actions">
-          <button id="exportBtn">Export JSON</button>
-          <label class="pill" style="cursor:pointer">Import JSON <input id="importFile" type="file" accept="application/json" class="hidden"></label>
-          <button id="resetProg" class="danger">Clear gearing checklist (this character)</button>
-        </div>
-      </section>
-    </div>
+    <div id="tab-todo" class="hidden"></div>
   </main>
-
-  <footer>
-    Gearing checklist adapted from the community AION 2 gearing sheet
-    (<a href="https://docs.google.com/spreadsheets/d/1qcq5GwmxjeoXuVogtD0U-KhaUnzECAjAQnn-iTHyGXU/edit?gid=1386834576" target="_blank" rel="noopener">source sheet</a>).
-    Resets: daily 07:00 UTC, weekly Wednesday 07:00 UTC (global servers). Unofficial fan tool, not affiliated with NCSOFT.
-  </footer>
 </div>
 
 <script>
 /* ---------------- DATA ---------------- */
 const PROGRESSION = [
-  { id: "ref", title: "Things that give item level", tag: "Reference", items: [
-    { id: "ref1", t: "Gear base item level counts 1:1", n: "70 item level gear = 70" },
-    { id: "ref2", t: "Gear enhancement levels count 1:1", n: "+10 = 10" },
-    { id: "ref3", t: "Manastones on gear (Soulstones on accessories)", n: "Grey 1 · Green 2 · Blue 3 · Yellow 4" },
-    { id: "ref4", t: "Theostones on weapon and guard", n: "3 per piece" },
-    { id: "ref5", t: "Amplified Enhance (above +15)", n: "5 per level" },
-    { id: "ref6", t: "Daevanion Crystals count 1:1", n: "PvP Azphel crystals count too" },
-    { id: "ref7", t: "Arcana (unlocks at 1600)", n: "Grey 20 · Green 40 · Blue 60 · Gold 80" },
-    { id: "ref8", t: "Arcana enhancement counts 1:1", n: "+3 = 3" },
-  ]},
   { id: "m1", title: "Level 45 → 1400", min: 0, max: 1400, items: [
     { id: "m1a", t: "Do side quests", n: "Daevanion Crystals, a full Pilgrim/Liberator set, 2 Clash Runes, plus skill points" },
     { id: "m1b", t: "Clear all Sealed Dungeons", n: "Daevanion Crystals and more skill points" },
@@ -184,7 +107,7 @@ const PROGRESSION = [
     { id: "m1e", t: "Weapon + Guard to +10" },
     { id: "m1f", t: "Blue gear to no more than +5, spread evenly", n: "Only push this when you're close to 1400" },
     { id: "m1g", t: "Clash Runes to +1 each" },
-    { id: "m1h", t: "Exploration Draupnir ×3 for the guaranteed pity piece", n: "Can take this to +10 if it helps" },
+    { id: "m1h", t: "Exploration Draupnir" },
     { id: "m1i", t: "Spacetime Rift side quests + Sealed Dungeons", n: "Lots of enhancement stones" },
     { id: "m1j", t: "Manastone every piece of gear" },
   ], optional: [
@@ -310,17 +233,6 @@ const EVENTS = [
   ]},
 ];
 
-// Times in UTC. Siege/Nahma are unconfirmed (guides disagree).
-const SCHEDULE = [
-  { name: "Shugo Festival", when: "Every hour at :00", next: () => nextHourly(0), dur: "3 min entry" },
-  { name: "Dimensional Invasion", when: "Every hour at :30", next: () => nextHourly(30), dur: "3 min entry" },
-  { name: "Spacetime Rift", when: "Every 3h (00, 03 … 21 UTC)", next: () => nextEvery3h(), dur: "Portal 10 min" },
-  { name: "Arena of Tactics (10v10)", when: "Daily, 02:00–05:00 & 10:00–12:00 UTC", next: () => nextDailyAny([[2,0],[10,0]]), dur: "Window" },
-  { name: "Artifact Siege", when: "Mon · Thu · Sat ~12:00 UTC", next: () => nextWeekdays([1,4,6], 12, 0), dur: "Unconfirmed time", warn: true },
-  { name: "Executor field bosses", when: "30 min after each siege", next: () => nextWeekdays([1,4,6], 12, 30), dur: "Unconfirmed time", warn: true },
-  { name: "Guardian Lord Nahma", when: "Fri · Sun ~12:00 UTC", next: () => nextWeekdays([5,0], 12, 0), dur: "Unconfirmed time", warn: true },
-];
-
 /* ---------------- TIME HELPERS ---------------- */
 const RESET_H = 7; // UTC
 function lastDailyReset(now = new Date()) {
@@ -335,29 +247,6 @@ function lastWeeklyReset(now = new Date()) {
 }
 function nextDailyReset(now = new Date()) { const d = lastDailyReset(now); d.setUTCDate(d.getUTCDate() + 1); return d; }
 function nextWeeklyReset(now = new Date()) { const d = lastWeeklyReset(now); d.setUTCDate(d.getUTCDate() + 7); return d; }
-function nextHourly(min) {
-  const n = new Date(); const d = new Date(n); d.setUTCMinutes(min, 0, 0);
-  if (d <= n) d.setUTCHours(d.getUTCHours() + 1); return d;
-}
-function nextEvery3h() {
-  const step = 3 * 3600e3, n = Date.now();
-  return new Date(Math.floor(n / step) * step + step);
-}
-function nextDailyAny(list) {
-  const n = new Date(); let best = null;
-  for (let add = 0; add < 2; add++) for (const [h, m] of list) {
-    const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add, h, m));
-    if (d > n && (!best || d < best)) best = d;
-  }
-  return best;
-}
-function nextWeekdays(days, h, m) {
-  const n = new Date();
-  for (let add = 0; add < 8; add++) {
-    const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add, h, m));
-    if (d > n && days.includes(d.getUTCDay())) return d;
-  }
-}
 function fmtDur(ms) {
   if (ms < 0) ms = 0;
   const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
@@ -365,36 +254,35 @@ function fmtDur(ms) {
   if (h) return `${h}h ${m}m`;
   return `${m}m ${s % 60}s`;
 }
-const fmtLocal = d => d.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+// Shown in Melbourne / Sydney time (AEST/AEDT)
+const fmtAus = d => d.toLocaleString("en-AU", { timeZone: "Australia/Sydney", weekday: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 
 /* ---------------- STATE ---------------- */
 const KEY = "aion2-tracker-v1";
-function uid() { return Math.random().toString(36).slice(2, 10); }
-function newChar(name = "My Daeva") {
-  return { id: uid(), name, cls: "", server: "", ilvl: 0, prog: {}, daily: {}, weekly: {}, once: {}, dStamp: 0, wStamp: 0 };
-}
 let state;
 function load() {
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
-  if (!state || !Array.isArray(state.chars) || !state.chars.length) {
-    const c = newChar(); state = { chars: [c], active: c.id, tab: "progression", open: {} };
+  // Older saves held a list of characters; keep the active one's progress.
+  if (state && Array.isArray(state.chars)) {
+    const c = state.chars.find(c => c.id === state.active) || state.chars[0] || {};
+    state = { prog: c.prog, daily: c.daily, weekly: c.weekly, once: c.once, dStamp: c.dStamp, wStamp: c.wStamp, open: state.open };
   }
-  state.open = state.open || {};
+  state = state || {};
+  ["prog", "daily", "weekly", "once", "open"].forEach(k => { state[k] = state[k] || {}; });
+  if (state.tab !== "todo") state.tab = "progression";
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
-function cur() { return state.chars.find(c => c.id === state.active) || state.chars[0]; }
-function applyResets(c) {
-  ["prog", "daily", "weekly", "once"].forEach(k => { c[k] = c[k] || {}; });
+function applyResets() {
   const ld = +lastDailyReset(), lw = +lastWeeklyReset();
-  if ((c.dStamp || 0) < ld) { c.daily = {}; c.dStamp = ld; }
-  if ((c.wStamp || 0) < lw) { c.weekly = {}; c.wStamp = lw; }
+  if ((state.dStamp || 0) < ld) { state.daily = {}; state.dStamp = ld; }
+  if ((state.wStamp || 0) < lw) { state.weekly = {}; state.wStamp = lw; }
 }
 
 /* ---------------- RENDER ---------------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 
-function store(kind) { const c = cur(); return kind === "prog" ? c.prog : kind === "daily" ? c.daily : kind === "once" ? c.once : c.weekly; }
+function store(kind) { return state[kind]; }
 function val(kind, id) { return store(kind)[id] || 0; }
 function isDone(kind, item) { const v = val(kind, item.id); return item.c ? v >= item.c : !!v; }
 
@@ -427,98 +315,44 @@ function sectionHtml(key, title, badgeHtml, body, done, total) {
     <div class="bar"><i style="width:${pct}%"></i></div>${body}</details>`;
 }
 
-function currentMilestone(ilvl) {
-  const ms = PROGRESSION.filter(p => p.max);
-  return ms.find(m => ilvl < m.max) || ms[ms.length - 1];
-}
-
 function renderProgression() {
-  const c = cur(), now = currentMilestone(+c.ilvl || 0);
   $("#tab-progression").innerHTML = PROGRESSION.map(sec => {
     const all = sec.items.concat(sec.optional || []);
     const [d, t] = countDone("prog", all);
-    let badge = "";
-    if (sec.tag) badge = `<span class="badge">${sec.tag}</span>`;
-    else if (d === t) badge = '<span class="badge done">complete</span>';
-    else if (sec.id === now.id) badge = '<span class="badge now">you are here</span>';
+    const badge = d === t ? '<span class="badge done">complete</span>' : "";
     let body = `<ul class="tasks">${sec.items.map(i => taskLi("prog", i)).join("")}</ul>`;
     if (sec.optional) body += `<h3 class="sub">Optional / over time</h3><ul class="tasks">${sec.optional.map(i => taskLi("prog", i)).join("")}</ul>`;
     return sectionHtml("p-" + sec.id, sec.title, badge, body, d, t);
-  }).join("") + `<p class="note">Crafted gear can be worked on any time. It's RNG-heavy and expensive, but the upgrades stay useful for the whole gearing journey.</p>`;
-}
-
-function renderDaily() {
-  const [d, t] = countDone("daily", DAILIES, true);
-  $("#tab-daily").innerHTML = sectionHtml("daily", "Daily checklist", `<span class="badge">resets ${fmtLocal(nextDailyReset())}</span>`,
-    `<ul class="tasks">${DAILIES.map(i => taskLi("daily", i)).join("")}</ul>`, d, t) +
-    `<p class="note">Server-wide tasks are shared by every character on the same server, so do them on your main. Nightmare, Transcendence and the festival/invasion keys build up over several days, so a missed day isn't lost.</p>`;
-}
-
-function renderWeekly() {
-  $("#tab-weekly").innerHTML = WEEKLIES.map(g => {
-    const [d, t] = countDone("weekly", g.items, true);
-    return sectionHtml("w-" + g.group, g.group, `<span class="badge">resets ${fmtLocal(nextWeeklyReset())}</span>`,
-      `<ul class="tasks">${g.items.map(i => taskLi("weekly", i)).join("")}</ul>`, d, t);
-  }).join("") + `<p class="note">Weekly entries refill to their cap instead of stacking, so spend them before Wednesday. Raids, Trial, Subjugation, Exploration and Nightmare are per character, so alts get their own.</p>`;
+  }).join("");
 }
 
 function kindOf(item) { return item.r === "once" ? "once" : item.r === "daily" ? "daily" : "weekly"; }
 
-function renderEvents() {
+function renderTodo() {
+  const [dd, dt] = countDone("daily", DAILIES, true);
+  let html = sectionHtml("daily", "Daily", `<span class="badge">resets ${fmtAus(nextDailyReset())}</span>`,
+    `<ul class="tasks">${DAILIES.map(i => taskLi("daily", i)).join("")}</ul>`, dd, dt);
+  html += WEEKLIES.map(g => {
+    const [d, t] = countDone("weekly", g.items, true);
+    return sectionHtml("w-" + g.group, "Weekly: " + g.group, `<span class="badge">resets ${fmtAus(nextWeeklyReset())}</span>`,
+      `<ul class="tasks">${g.items.map(i => taskLi("weekly", i)).join("")}</ul>`, d, t);
+  }).join("");
   const now = new Date();
-  const live = EVENTS.filter(e => new Date(e.end) > now);
-  if (!live.length) { $("#tab-events").innerHTML = '<section class="card"><p class="note">No tracked events running. Check the official announcements for new ones.</p></section>'; return; }
-  $("#tab-events").innerHTML = live.map(e => {
+  html += EVENTS.filter(e => new Date(e.end) > now).map(e => {
     const all = e.groups.flatMap(g => g.items);
     let d = 0; all.forEach(i => { if (isDone(kindOf(i), i)) d++; });
     const body = e.groups.map(g => `<h3 class="sub">${esc(g.name)}${g.s === "server" ? ' <span class="badge server">server-wide</span>' : ""}</h3>
       <ul class="tasks">${g.items.map(i => taskLi(kindOf(i), i)).join("")}</ul>`).join("");
     const left = fmtDur(new Date(e.end) - now);
-    return sectionHtml("e-" + e.id, e.title, `<span class="badge ends">ends ${esc(e.endLabel)} · ${left}</span>`, body, d, all.length);
-  }).join("") + `<p class="note">Event weeklies reset with the normal Wednesday reset. Events disappear from this list once they end.</p>`;
-}
-
-function renderSchedule() {
-  const rows = SCHEDULE.map(ev => {
-    const n = ev.next(); const ms = n - new Date();
-    return `<tr><td><b>${esc(ev.name)}</b><div class="note">${esc(ev.when)}</div></td>
-      <td class="next ${ms < 15 * 60000 ? "soon" : ""}">${fmtLocal(n)}<div class="note">in ${fmtDur(ms)}</div></td>
-      <td class="hide-sm note">${ev.warn ? `<span class="badge ends">${esc(ev.dur)}</span>` : esc(ev.dur)}</td></tr>`;
+    return sectionHtml("e-" + e.id, "Event: " + e.title, `<span class="badge ends">ends ${esc(e.endLabel)} · ${left}</span>`, body, d, all.length);
   }).join("");
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  $("#tab-schedule").innerHTML = `<section class="card"><h2 style="font-size:16px;margin:0 0 6px">World events</h2>
-    <p class="note">Times shown in your local time (${esc(tz)}). Siege and boss times differ between guides, so check the in-game timer.</p>
-    <table class="sched"><thead><tr><th>Event</th><th>Next</th><th class="hide-sm">Notes</th></tr></thead><tbody>${rows}</tbody></table></section>`;
-}
-
-function renderChar() {
-  const sel = $("#charSelect");
-  sel.innerHTML = state.chars.map(c => `<option value="${c.id}" ${c.id === state.active ? "selected" : ""}>${esc(c.name || "Unnamed")}${c.ilvl ? ` · ${c.ilvl}` : ""}</option>`).join("");
-  const c = cur();
-  $("#fName").value = c.name || ""; $("#fClass").value = c.cls || ""; $("#fServer").value = c.server || ""; $("#fIlvl").value = c.ilvl || "";
-  $("#delChar").disabled = state.chars.length < 2;
-}
-
-function renderSummary() {
-  const c = cur(), il = +c.ilvl || 0, m = currentMilestone(il);
-  const span = m.max - m.min, pct = Math.max(0, Math.min(100, Math.round((il - m.min) / span * 100)));
-  $("#sMilestone").textContent = il >= 2500 ? "2500+ · push to 2800" : m.title;
-  $("#bMilestone").style.width = (il >= 2500 ? 100 : pct) + "%";
-  const allProg = PROGRESSION.filter(p => !p.tag).flatMap(p => p.items.concat(p.optional || []));
-  const [pd, pt] = countDone("prog", allProg);
-  $("#sProg").textContent = `${pd}/${pt}`; $("#bProg").style.width = (pd / pt * 100) + "%";
-  const [dd, dt] = countDone("daily", DAILIES, true);
-  $("#sDaily").textContent = `${dd}/${dt}`; $("#bDaily").style.width = (dd / dt * 100) + "%";
-  const wAll = WEEKLIES.flatMap(g => g.items);
-  const [wd, wt] = countDone("weekly", wAll, true);
-  $("#sWeekly").textContent = `${wd}/${wt}`; $("#bWeekly").style.width = (wd / wt * 100) + "%";
+  $("#tab-todo").innerHTML = html;
 }
 
 function renderAll() {
-  applyResets(cur());
-  renderChar(); renderSummary();
-  renderProgression(); renderDaily(); renderWeekly(); renderEvents(); renderSchedule();
-  showTab(state.tab || "progression");
+  applyResets();
+  renderProgression(); renderTodo();
+  showTab(state.tab);
   save();
 }
 
@@ -552,49 +386,11 @@ document.addEventListener("toggle", e => {
   const d = e.target; if (d.matches && d.matches("details[data-key]")) { state.open[d.dataset.key] = d.open; save(); }
 }, true);
 
-$("#charSelect").addEventListener("change", e => { state.active = e.target.value; renderAll(); });
-$("#addChar").addEventListener("click", () => {
-  const c = newChar("New character"); state.chars.push(c); state.active = c.id; renderAll(); $("#fName").select();
-});
-$("#delChar").addEventListener("click", () => {
-  if (state.chars.length < 2) return;
-  if (!confirm(`Delete ${cur().name || "this character"}?`)) return;
-  state.chars = state.chars.filter(c => c.id !== state.active); state.active = state.chars[0].id; renderAll();
-});
-[["#fName", "name"], ["#fClass", "cls"], ["#fServer", "server"], ["#fIlvl", "ilvl"]].forEach(([sel, k]) => {
-  $(sel).addEventListener("input", e => {
-    cur()[k] = k === "ilvl" ? Math.max(0, parseInt(e.target.value) || 0) : e.target.value;
-    save(); renderSummary(); renderProgression();
-    const opt = $("#charSelect").selectedOptions[0];
-    if (opt) opt.textContent = (cur().name || "Unnamed") + (cur().ilvl ? ` · ${cur().ilvl}` : "");
-  });
-});
-$("#exportBtn").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = `aion2-tracker-${new Date().toISOString().slice(0, 10)}.json`; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-});
-$("#importFile").addEventListener("change", async e => {
-  const f = e.target.files[0]; if (!f) return;
-  try {
-    const data = JSON.parse(await f.text());
-    if (!Array.isArray(data.chars) || !data.chars.length) throw new Error("bad file");
-    state = data; state.open = state.open || {}; renderAll(); alert("Imported.");
-  } catch (err) { alert("That file doesn't look like a tracker backup."); }
-  e.target.value = "";
-});
-$("#resetProg").addEventListener("click", () => {
-  if (confirm("Clear the gearing checklist for this character?")) { cur().prog = {}; renderAll(); }
-});
-
 function tick() {
   const now = new Date();
   $("#dailyIn").textContent = fmtDur(nextDailyReset(now) - now);
   $("#weeklyIn").textContent = fmtDur(nextWeeklyReset(now) - now);
-  const c = cur();
-  if ((c.dStamp || 0) < +lastDailyReset(now) || (c.wStamp || 0) < +lastWeeklyReset(now)) renderAll();
-  if (state.tab === "schedule" && now.getSeconds() % 10 === 0) renderSchedule();
+  if ((state.dStamp || 0) < +lastDailyReset(now) || (state.wStamp || 0) < +lastWeeklyReset(now)) renderAll();
 }
 
 load(); renderAll(); tick(); setInterval(tick, 1000);
